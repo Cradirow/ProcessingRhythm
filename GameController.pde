@@ -6,7 +6,7 @@ class GameController{
   
   GameController(){}
   
-  void update(){
+  public void update(){
     if(key == 's') keyS = true;
     else keyS = false;
     
