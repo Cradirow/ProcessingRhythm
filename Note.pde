@@ -10,8 +10,7 @@ class Note{
   
   Note(int _note, int _noteLength, float _speed){
     x = 40 + _note*95;
-    //y = -10;
-    y=500;
+    y = -10;
     r = 10;
     speed = _speed;
     note = _note;
@@ -54,13 +53,15 @@ class Note{
     hitLocation = 1;
   }
   
-  public void outBox(){
+  //above out box
+  public void outBox(){ 
     noteColor = color(255,255,255);
     hitLocation = -1;
   }
   
-  public void deletedBox(){
-    noteOut();
+  //downward out box
+  public void deletedBox(){ 
+    noteOut(note);
     hit = true;
   }
   
@@ -79,7 +80,7 @@ class Note{
       outBox();
     }
     //delete
-    else if(y > 590){
+    else if(y > 590 && !hit){
       deletedBox();
     }
     //normal

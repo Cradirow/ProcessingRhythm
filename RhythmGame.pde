@@ -1,5 +1,6 @@
 //library settings
 import ddf.minim.*;
+import ddf.minim.analysis.*;
 
 //extends class
 ArrayList<Note> notes = new ArrayList<Note>();
@@ -10,12 +11,16 @@ ArrayList<Note> lane4 = new ArrayList<Note>();
 GameController gameController = new GameController();
 
 //lane counts
-int[] laneCount = new int[] {-1,-1,-1,-1};
+int[] laneCount = new int[] {0, 0, 0, 0};
 
 //resources
 PImage musicImg;
-AudioPlayer player;
 Minim minim;
+AudioPlayer song;
+AudioPlayer beatSong;
+BeatDetect beat;
+
+float eRadius;
 
 //game manage
 boolean isStart = true; //change to false
@@ -26,7 +31,7 @@ boolean isMusicOn = false;
 int hp = 100;
 int score = 0;
 int combo = 0;
-float speed = 0.1; // speed x0.8, x1.0, x1.2 support
+float speed = 2; // speed x0.8, x1.0, x1.2 support
 int melody = 0;
 
 int perfectScore = 20;
@@ -34,8 +39,13 @@ int goodScore = 10;
 
 //hit effects
 String hitText = "";
-int time;
-int wait = 2000;
+
+//delay
+int startTime;
+int wait = 5600; //560 diff from top to hitbox
+
+int beatTime;
+int beatWait = 500;
 
 void setup(){
   size(550,700);
@@ -43,28 +53,29 @@ void setup(){
   
   musicImg = loadImage("unity.jpg");
   minim = new Minim(this);
-  player = minim.loadFile("unity.mp3", 2048);
-  time = millis();
+  song = minim.loadFile("unity.mp3", 2048);
+  beatSong = song;
+  beat = new BeatDetect();
+  
+  startTime = millis();
   smooth();
   strokeWeight(3);
   
-  //newNote(0);
-  //newNote(1);
-  //newNote(2);
-  //newNote(3);
 }
 
 void draw(){
     
   if(isStart){
     background(255);
+    beatDetection();
+    
     backgroundDraw();
     UIDraw();
     
-    if(millis() - time >= wait){
+    if(millis() - startTime >= wait){
       update();
       if(!isMusicOn){
-        //player.play();
+        song.play();
         isMusicOn = true;
       }
     }
@@ -199,6 +210,20 @@ void UIDraw(){
   
 }
 
+void beatDetection(){
+  beatSong.play();
+  beatSong.mute();
+  beat.detect(beatSong.mix);
+  
+  if ( beat.isOnset() ){
+    if(millis() - beatTime >= beatWait){
+      int rand = (int)random(0,4);
+      newNote(rand);
+      beatTime = millis();
+    }
+  }
+}
+
 void mousePressed(){
   if(mouseOver) btnStart();
 }
@@ -248,24 +273,24 @@ void chkHit(ArrayList<Note> lane, int index){
   
   try{
     switch(lane.get(laneCount[index]).hitLocation){
-    case -1:
-      hitText = "BAD";
+    case -1: //above
+      hitText = "   BAD";
       combo = 0;
       hp -= 5;
       break;
-    case 0:
+    case 0: //normal
       hitText = "";
       combo = 0;
       hp -= 5;
       break;
-    case 1:
-      hitText = "GOOD";
+    case 1: //close
+      hitText = "  GOOD";
       score += goodScore;
       combo++;
       lane.get(laneCount[index]).hit = true;
       laneCount[index]++;
       break;
-    case 2:
+    case 2: //exactly fit
       hitText = "PERFECT";
       score += perfectScore;
       combo++;
@@ -278,8 +303,9 @@ void chkHit(ArrayList<Note> lane, int index){
   }
 }
 
-public void noteOut(){
-  hitText = "BAD";
+public void noteOut(int _note){
+  laneCount[_note]++;
+  hitText = "   BAD";
   hp -= 5;
   combo = 0;
 }
@@ -294,7 +320,7 @@ public void newNote(int _lane){
     default: lane = null; break;
   }
   if(lane != null){
-    laneCount[_lane]++;
+    //laneCount[_lane]++;
     Note newNote = new Note(_lane,2,speed);
     lane.add(newNote);
     notes.add(newNote);
