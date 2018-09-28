@@ -3,7 +3,14 @@ import ddf.minim.*;
 
 //extends class
 ArrayList<Note> notes = new ArrayList<Note>();
+ArrayList<Note> lane1 = new ArrayList<Note>();
+ArrayList<Note> lane2 = new ArrayList<Note>();
+ArrayList<Note> lane3 = new ArrayList<Note>();
+ArrayList<Note> lane4 = new ArrayList<Note>();
 GameController gameController = new GameController();
+
+//lane counts
+int[] laneCount = new int[] {-1,-1,-1,-1};
 
 //resources
 PImage musicImg;
@@ -16,21 +23,19 @@ boolean mouseOver = false;
 boolean isMusicOn = false;
 
 //game settings
-float speed = 0.1; // speed x0.8, x1.0, x1.2 support
+int hp = 100;
+int score = 0;
 int combo = 0;
+float speed = 0.1; // speed x0.8, x1.0, x1.2 support
 int melody = 0;
 
-//score
-int score = 0;
 int perfectScore = 20;
 int goodScore = 10;
 
-//HP
-int hp = 100;
-
-//hitbox scale;
-int hitboxTop = 550;
-int hitboxBottom = 560;
+//hit effects
+String hitText = "";
+int time;
+int wait = 2000;
 
 void setup(){
   size(550,700);
@@ -38,17 +43,15 @@ void setup(){
   
   musicImg = loadImage("unity.jpg");
   minim = new Minim(this);
-  //Delay();
   player = minim.loadFile("unity.mp3", 2048);
+  time = millis();
+  smooth();
+  strokeWeight(3);
   
-  Note newNote = new Note(0,2,speed);
-  notes.add(newNote);
-  newNote = new Note(1,2,speed);
-  notes.add(newNote);
-  newNote = new Note(2,2,speed);
-  notes.add(newNote);
-  newNote = new Note(3,2,speed);
-  notes.add(newNote);
+  newNote(0);
+  newNote(1);
+  newNote(2);
+  newNote(3);
 }
 
 void draw(){
@@ -56,15 +59,16 @@ void draw(){
   if(isStart){
     background(255);
     backgroundDraw();
+    UIDraw();
     
-    update();
-    gameController.update();
-    
-    if(!isMusicOn){
-      //player.play();
-      isMusicOn = true;
+    if(millis() - time >= wait){
+      update();
+      if(!isMusicOn){
+        //player.play();
+        isMusicOn = true;
+      }
     }
-    
+      
   }else{
     update();
     textSize(30);
@@ -95,9 +99,6 @@ void update(){
       moveNote(i);
     }
     
-    //cheke note hitting
-    chkNote();
-    
   }else{
     if(mouseX >= 200 && mouseX <= 400 
     && mouseY >= 450 && mouseY <= 500){
@@ -118,8 +119,18 @@ void backgroundDraw()
     line(20,690,420,690);
     
     //lane backgrounds
+    //lane1
     fill(255);
     rect(20,0,105,690);
+    //lane2
+    fill(255);
+    rect(125,0,95,690);
+    //lane3
+    fill(255);
+    rect(220,0,95,690);
+    //lane4
+    fill(255);
+    rect(315,0,105,690);
     
     //hit box
     strokeWeight(2);
@@ -160,19 +171,128 @@ void backgroundDraw()
     fill(255);
     textSize(50);
     text("K",350,660);
-    
-    
+}
+
+void UIDraw(){
+  //hit
+  fill(0);
+  text(hitText, 125, 250);
+  
+  //HP
+  fill(100);
+  rect(440,40,100,20);
+  
+  //score
+  fill(0);
+  textSize(20);
+  text("SCORE",450, 100);
+  textSize(30);
+  text(score, 450, 140);
+  
+  //combo
+  fill(0);
+  textSize(20);
+  text("COMBO",450, 200);
+  textSize(30);
+  text(combo, 450, 240);
+  
 }
 
 void mousePressed(){
   if(mouseOver) btnStart();
 }
 
-void gameStart(){ 
-  //moveNote(0);
-  //moveNote(1);
-  //moveNote(2);
-  //moveNote(3);
+void keyPressed(){
+  ArrayList<Note> lane;
+  int index = 0;
+  
+  if(key == 's'){
+    lane = lane1;
+    index = 0;
+    //lane1
+    fill(150);
+    rect(20,0,105,690);
+  }
+  else if(key =='d'){
+    lane = lane2;
+    index = 1;
+    //lane2
+    fill(150);
+    rect(125,0,95,690);
+  }
+  else if(key == 'j'){
+    lane = lane3;
+    index = 2;
+    //lane3
+    fill(150);
+    rect(220,0,95,690);
+  }
+  else if(key == 'k'){
+    lane = lane4;
+    index = 3;
+    //lane4
+    fill(150);
+    rect(315,0,105,690);
+  }else{
+    lane = null;
+  }
+  
+  if(lane != null){
+    chkHit(lane, index);
+  }
+  
+}
+
+void chkHit(ArrayList<Note> lane, int index){
+  
+  try{
+    switch(lane.get(laneCount[index]).hitLocation){
+    case -1:
+      hitText = "BAD";
+      combo = 0;
+      hp -= 5;
+      break;
+    case 0:
+      hitText = "";
+      combo = 0;
+      hp -= 5;
+      break;
+    case 1:
+      hitText = "GOOD";
+      score += goodScore;
+      combo++;
+      lane.get(laneCount[index]).hit = true;
+      laneCount[index]++;
+      break;
+    case 2:
+      hitText = "PERFECT";
+      score += perfectScore;
+      combo++;
+      lane.get(laneCount[index]).hit = true;
+      laneCount[index]++;
+      break;
+    }
+  }catch(IndexOutOfBoundsException e){
+    //System.out.println(".");
+  }
+  
+}
+
+public void newNote(int _lane){
+  ArrayList<Note> lane;
+  switch(_lane){
+    case 0: lane = lane1; break;
+    case 1: lane = lane2; break;
+    case 2: lane = lane3; break;
+    case 3: lane = lane4; break;
+    default: lane = null; break;
+  }
+  if(lane != null){
+    laneCount[_lane]++;
+    Note newNote = new Note(_lane,2,speed);
+    lane.add(newNote);
+    notes.add(newNote);
+  }
 }
 
 void moveNote(int index){
@@ -180,125 +300,6 @@ void moveNote(int index){
   notes.get(index).display();
 }
 
-//score in here.
-void chkNote(){
-  
-  //hitbox note
-  int lane;
-  for(int i=0; i<notes.size(); i++){
-    lane = notes.get(i).getLane();
-    
-    //perfect
-    if(notes.get(i).getY() >= hitboxTop && notes.get(i).getY() <= hitboxBottom){
-      notes.get(i).hitBox();
-      switch(lane){
-        case 1:
-          if(gameController.keyS){
-            score += 20;
-            combo++;
-          }
-          break;
-        case 2:
-          if(gameController.keyD){
-            score += 20;
-            combo++;
-          }
-          break;
-        case 3:
-          if(gameController.keyJ){
-            score += 20;
-            combo++;
-          }
-          break;
-        case 4:
-          if(gameController.keyK){
-            score += 20;
-            combo++;
-          }
-          break;
-      }
-    }
-    //good
-    else if(notes.get(i).getY() >= hitboxTop-20 && notes.get(i).getY() <= hitboxBottom+20){
-      notes.get(i).closeBox();
-      switch(lane){
-        case 1:
-          if(gameController.keyS){
-            score += 10;
-            combo++;
-          }
-          break;
-        case 2:
-          if(gameController.keyD){
-            score += 10;
-            combo++;
-          }
-          break;
-        case 3:
-          if(gameController.keyJ){
-            score += 10;
-            combo++;
-          }
-          break;
-        case 4:
-          if(gameController.keyK){
-            score += 10;
-            combo++;
-          }
-          break;
-      }
-    }
-    //bad
-    else if(notes.get(i).getY() > 580){
-      notes.get(i).outBox();
-      switch(lane){
-        case 1:
-          if(gameController.keyS){
-            score += 10;
-            combo = 0;
-          }
-          break;
-        case 2:
-          if(gameController.keyD){
-            score += 10;
-            combo = 0;
-          }
-          break;
-        case 3:
-          if(gameController.keyJ){
-            score += 10;
-            combo = 0;
-          }
-          break;
-        case 4:
-          if(gameController.keyK){
-            score += 10;
-            combo = 0;
-          }
-          break;
-      }
-    }
-  }
-  
-  //out boundary note
-  for(int i=0; i<notes.size(); i++){
-    if(notes.get(i).getY() > 590){
-      //reset combo
-      combo = 0;
-      //delete note
-      deleteNote(i);
-    }
-  }
-  
-  
-  
-}
-
-void deleteNote(int index){
-    notes.remove(index);
-}
-
 void btnStart(){
-  gameStart();
   isStart = true;
 }

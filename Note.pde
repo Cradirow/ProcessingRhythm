@@ -6,6 +6,7 @@ class Note{
   int noteLength;
   color noteColor;
   public boolean hit = false;
+  int hitLocation = 0;
   
   Note(int _note, int _noteLength, float _speed){
     x = 40 + _note*95;
@@ -20,12 +21,15 @@ class Note{
   
   void update(){
     y = y + speed;
+    chkNote();
   }
   
   void display(){
-    fill(noteColor);
-    strokeWeight(1);
-    rect(x,y,r*7.5,r*noteLength,7);
+    if(!hit){
+      fill(noteColor);
+      strokeWeight(1);
+      rect(x,y,r*7.5,r*noteLength,7);
+    }
   }
   
   public float getY(){
@@ -36,18 +40,47 @@ class Note{
     return note;
   }
   
+  public void normalBox(){
+    hitLocation = 0;
+  }
+  
   public void hitBox(){
     noteColor = color(244,197,66);
-    hit = true;
+    hitLocation = 2;
   }
   
   public void closeBox(){
     noteColor = color(0,0,0);
+    hitLocation = 1;
   }
   
   public void outBox(){
     noteColor = color(255,255,255);
-    hit = false;
+    hitLocation = -1;
   }
   
+  //score in here.
+  void chkNote(){
+    //perfect
+    if(y >= 550 && y <= 560){
+      hitBox();
+    }
+    //good
+    else if(y >= 530 && y <= 580){
+      closeBox();
+    }
+    //bad
+    else if(y > 580 || y < 530 && y > 510){
+      outBox();
+    }
+    //normal
+    else{
+      normalBox();
+    }
+    //out boundary note
+    if(y > 590){
+      //delete note
+      hit = true;
+    }
+  }
 }
