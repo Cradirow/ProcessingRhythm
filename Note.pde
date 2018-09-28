@@ -44,18 +44,18 @@ class Note{
   }
   
   public void hitBox(){
-    noteColor = color(244,197,66);
+    //noteColor = color(244,197,66);
     hitLocation = 2;
   }
   
   public void closeBox(){
-    noteColor = color(0,0,0);
+    //noteColor = color(0,0,0);
     hitLocation = 1;
   }
   
   //above out box
   public void outBox(){ 
-    noteColor = color(255,255,255);
+    //noteColor = color(255,255,255);
     hitLocation = -1;
   }
   

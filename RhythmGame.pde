@@ -13,17 +13,20 @@ GameController gameController = new GameController();
 //lane counts
 int[] laneCount = new int[] {0, 0, 0, 0};
 
-//resources
+//library instance
 PImage musicImg;
 Minim minim;
 AudioPlayer song;
 AudioPlayer beatSong;
 BeatDetect beat;
 
-float eRadius;
+//recources
+PImage unityImg;
+PImage go4itImg;
+PImage firestoneImg;
 
 //game manage
-boolean isStart = true; //change to false
+boolean isStart = false; //false before start
 boolean mouseOver = false;
 boolean isMusicOn = false;
 
@@ -31,8 +34,8 @@ boolean isMusicOn = false;
 int hp = 100;
 int score = 0;
 int combo = 0;
-float speed = 2; // speed x0.8, x1.0, x1.2 support
-int melody = 0;
+int speed = 2; // speed x0.8, x1.0, x1.2 support
+int music = 0;
 
 int perfectScore = 20;
 int goodScore = 10;
@@ -42,25 +45,52 @@ String hitText = "";
 
 //delay
 int startTime;
-int wait = 5600; //560 diff from top to hitbox
+int wait = 4000; //go4it - 2speed beats
 
 int beatTime;
-int beatWait = 500;
+int beatWait = 300;
 
 void setup(){
   size(550,700);
   background(0);
   
-  musicImg = loadImage("unity.jpg");
-  minim = new Minim(this);
-  song = minim.loadFile("unity.mp3", 2048);
-  beatSong = song;
-  beat = new BeatDetect();
+  switch(music){
+    
+  }
+  
+  //minim = new Minim(this);
+  //song = minim.loadFile("go4it.mp3", 2048);
+  //beatSong = minim.loadFile("go4it.mp3", 2048);
+  //beat = new BeatDetect();
+  
+  unityImg = loadImage("unity.jpg");
+  go4itImg = loadImage("go4it.jpg");
+  firestoneImg = loadImage("firestone.jpg");
+  musicImg = go4itImg;
   
   startTime = millis();
   smooth();
-  strokeWeight(3);
-  
+  strokeWeight(3); 
+}
+
+void songSelect(int _music){
+  minim = new Minim(this);
+  switch(_music){
+    case 0: 
+      song = minim.loadFile("unity.mp3", 2048);
+      beatSong = minim.loadFile("unity.mp3", 2048);
+      break;
+    case 1:
+      song = minim.loadFile("go4it.mp3", 2048);
+      beatSong = minim.loadFile("go4it.mp3", 2048);
+      break;
+    case 2:
+      song = minim.loadFile("firestone.mp3", 2048);
+      beatSong = minim.loadFile("firestone.mp3", 2048);
+      break;
+    default: break;
+  }
+  beat = new BeatDetect();
 }
 
 void draw(){
@@ -81,23 +111,51 @@ void draw(){
     }
       
   }else{
+    background(0);
+    String title = "TheFatRat - Unity";
+    switch(music){
+      case 0:
+      musicImg = unityImg;
+      title = "TheFatRat - Unity";
+      break;
+      case 1:
+      musicImg = go4itImg;
+      title = "TheFatRat - Go4It";
+      break;
+      case 2:
+      musicImg = firestoneImg;
+      title = "Kygo - Firestone";
+      break;
+    }
+    
     update();
     textSize(30);
     fill(200);
-    text("TheFatRat - Unity", 130,150);
+    text(title, 130,150);
     image(musicImg, 150, 200, 200, 200);
     fill(255);
     rect(150,450,200,50,10);
     fill(50);
     textSize(30);
-    text("START", 200, 485);
+    text("ENTER", 200, 485);
+    
+    textSize(30);
+    fill(255);
+    text("SPEED", 200, 550);
+    
+    triangle(232,590,242,570,252,590);
+    triangle(232,670,242,690,252,670);
+    
+    textSize(60);
+    fill(255);
+    text(speed, 225, 650);
     
     if(mouseOver){
       fill(0,100,150);
       rect(150,450,200,50,10);
       fill(50);
       textSize(30);
-      text("START", 200, 485);
+      text("ENTER", 200, 485);
     }
   }
 }
@@ -206,7 +264,12 @@ void UIDraw(){
   textSize(30);
   text(combo, 450, 240);
   
-  //
+  //back to menu
+  fill(0);
+  textSize(20);
+  text("GO MENU",435, 600);
+  textSize(20);
+  text("backspace", 435, 640);
   
 }
 
@@ -214,6 +277,7 @@ void beatDetection(){
   beatSong.play();
   beatSong.mute();
   beat.detect(beatSong.mix);
+  //beat.detect(song.mix);
   
   if ( beat.isOnset() ){
     if(millis() - beatTime >= beatWait){
@@ -224,11 +288,34 @@ void beatDetection(){
   }
 }
 
-void mousePressed(){
-  if(mouseOver) btnStart();
-}
-
 void keyPressed(){
+  if(key == CODED){
+    if(keyCode == LEFT){
+      if(music > 0){
+        music --;
+      }
+    }else if(keyCode == RIGHT){
+      if(music < 2){
+        music ++;
+      }
+    }else if(keyCode == UP){
+      if(speed < 3) speed++;
+    }else if(keyCode == DOWN){
+      if(speed > 1) speed--;
+    }
+  }
+  
+  if(keyCode == ENTER || keyCode == RETURN){
+      songSelect(music);
+      isStart = true;
+      startTime = 0;
+  }
+  
+  if(keyCode == BACKSPACE){
+    song.mute();
+    isStart = false;
+  }
+  
   ArrayList<Note> lane;
   int index = 0;
   
@@ -321,7 +408,7 @@ public void newNote(int _lane){
   }
   if(lane != null){
     //laneCount[_lane]++;
-    Note newNote = new Note(_lane,2,speed);
+    Note newNote = new Note(_lane,speed,speed);
     lane.add(newNote);
     notes.add(newNote);
   }
@@ -333,5 +420,5 @@ void moveNote(int index){
 }
 
 void btnStart(){
-  isStart = true;
+  //isStart = true;
 }
