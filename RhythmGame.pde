@@ -48,10 +48,10 @@ void setup(){
   smooth();
   strokeWeight(3);
   
-  newNote(0);
-  newNote(1);
-  newNote(2);
-  newNote(3);
+  //newNote(0);
+  //newNote(1);
+  //newNote(2);
+  //newNote(3);
 }
 
 void draw(){
@@ -98,7 +98,6 @@ void update(){
     for(int i=0; i<notes.size(); i++){
       moveNote(i);
     }
-    
   }else{
     if(mouseX >= 200 && mouseX <= 400 
     && mouseY >= 450 && mouseY <= 500){
@@ -196,6 +195,8 @@ void UIDraw(){
   textSize(30);
   text(combo, 450, 240);
   
+  //
+  
 }
 
 void mousePressed(){
@@ -275,7 +276,12 @@ void chkHit(ArrayList<Note> lane, int index){
   }catch(IndexOutOfBoundsException e){
     //System.out.println(".");
   }
-  
+}
+
+public void noteOut(){
+  hitText = "BAD";
+  hp -= 5;
+  combo = 0;
 }
 
 public void newNote(int _lane){

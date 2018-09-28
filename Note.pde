@@ -59,6 +59,11 @@ class Note{
     hitLocation = -1;
   }
   
+  public void deletedBox(){
+    noteOut();
+    hit = true;
+  }
+  
   //score in here.
   void chkNote(){
     //perfect
@@ -70,17 +75,18 @@ class Note{
       closeBox();
     }
     //bad
-    else if(y > 580 || y < 530 && y > 510){
+    else if(y > 510 && y < 530){
       outBox();
+    }
+    //delete
+    else if(y > 590){
+      deletedBox();
     }
     //normal
     else{
       normalBox();
     }
     //out boundary note
-    if(y > 590){
-      //delete note
-      hit = true;
-    }
+    
   }
 }
