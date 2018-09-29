@@ -19,6 +19,8 @@ Minim minim;
 AudioPlayer song;
 AudioPlayer beatSong;
 BeatDetect beat;
+//BeatDetect beats;
+float eRadius;
 
 //recources
 PImage unityImg;
@@ -45,10 +47,10 @@ String hitText = "";
 
 //delay
 int startTime;
-int wait = 4000; //go4it - 2speed beats
+int wait = 4600;
 
 int beatTime;
-int beatWait = 300;
+int beatWait = 200;
 
 void setup(){
   size(550,700);
@@ -68,7 +70,6 @@ void setup(){
   firestoneImg = loadImage("firestone.jpg");
   musicImg = go4itImg;
   
-  startTime = millis();
   smooth();
   strokeWeight(3); 
 }
@@ -91,6 +92,9 @@ void songSelect(int _music){
     default: break;
   }
   beat = new BeatDetect();
+  //beats = new BeatDetect();
+  ellipseMode(RADIUS);
+  eRadius = 20;
 }
 
 void draw(){
@@ -265,11 +269,11 @@ void UIDraw(){
   text(combo, 450, 240);
   
   //back to menu
-  fill(0);
-  textSize(20);
-  text("GO MENU",435, 600);
-  textSize(20);
-  text("backspace", 435, 640);
+  //fill(0);
+  //textSize(20);
+  //text("GO MENU",435, 600);
+  //textSize(20);
+  //text("backspace", 435, 640);
   
 }
 
@@ -277,7 +281,7 @@ void beatDetection(){
   beatSong.play();
   beatSong.mute();
   beat.detect(beatSong.mix);
-  //beat.detect(song.mix);
+  //beats.detect(song.mix);
   
   if ( beat.isOnset() ){
     if(millis() - beatTime >= beatWait){
@@ -286,6 +290,16 @@ void beatDetection(){
       beatTime = millis();
     }
   }
+  
+  eRadius *= 0.95;
+  ellipse(455, 565, eRadius, eRadius);
+  if ( eRadius < 20 ) eRadius = 20;
+}
+
+void keyHitImpact(int index){
+  float a = map(eRadius, 20, 80, 60, 255);
+  fill(random(255), random(255), random(255), a);
+  eRadius = index;
 }
 
 void keyPressed(){
@@ -295,26 +309,29 @@ void keyPressed(){
         music --;
       }
     }else if(keyCode == RIGHT){
-      if(music < 2){
+      if(music < 3){
         music ++;
       }
     }else if(keyCode == UP){
       if(speed < 3) speed++;
     }else if(keyCode == DOWN){
-      if(speed > 1) speed--;
+      if(speed > 2) speed--;
     }
   }
   
   if(keyCode == ENTER || keyCode == RETURN){
+    if(!isStart){
       songSelect(music);
-      isStart = true;
-      startTime = 0;
+      wait = wait/(speed-1);
+      isStart = true;  
+      startTime = millis();
+    }
   }
   
-  if(keyCode == BACKSPACE){
-    song.mute();
-    isStart = false;
-  }
+  //if(keyCode == BACKSPACE){
+  //  setup();
+  //  isStart = false;
+  //}
   
   ArrayList<Note> lane;
   int index = 0;
@@ -376,6 +393,7 @@ void chkHit(ArrayList<Note> lane, int index){
       combo++;
       lane.get(laneCount[index]).hit = true;
       laneCount[index]++;
+      keyHitImpact(60);
       break;
     case 2: //exactly fit
       hitText = "PERFECT";
@@ -383,6 +401,7 @@ void chkHit(ArrayList<Note> lane, int index){
       combo++;
       lane.get(laneCount[index]).hit = true;
       laneCount[index]++;
+      keyHitImpact(90);
       break;
     }
   }catch(IndexOutOfBoundsException e){
