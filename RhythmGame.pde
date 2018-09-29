@@ -47,27 +47,17 @@ String hitText = "";
 
 //delay
 int startTime;
-int wait = 4600;
-
+int wait = 4400;
 int beatTime;
-int beatWait = 200;
+int beatWait = 300;
 
 void setup(){
   size(550,700);
   background(0);
   
-  switch(music){
-    
-  }
-  
-  //minim = new Minim(this);
-  //song = minim.loadFile("go4it.mp3", 2048);
-  //beatSong = minim.loadFile("go4it.mp3", 2048);
-  //beat = new BeatDetect();
-  
   unityImg = loadImage("unity.jpg");
   go4itImg = loadImage("go4it.jpg");
-  firestoneImg = loadImage("firestone.jpg");
+  firestoneImg = loadImage("prelude.jpg");
   musicImg = go4itImg;
   
   smooth();
@@ -86,15 +76,28 @@ void songSelect(int _music){
       beatSong = minim.loadFile("go4it.mp3", 2048);
       break;
     case 2:
-      song = minim.loadFile("firestone.mp3", 2048);
-      beatSong = minim.loadFile("firestone.mp3", 2048);
+      song = minim.loadFile("prelude_short.mp3", 2048);
+      beatSong = minim.loadFile("prelude_short.mp3", 2048);
       break;
     default: break;
   }
-  beat = new BeatDetect();
-  //beats = new BeatDetect();
+  //beat = new BeatDetect();
   ellipseMode(RADIUS);
   eRadius = 20;
+}
+
+void gameStart(){
+  if(!isStart){
+      songSelect(music);
+      if(speed == 3) wait = 2770;
+      if(music == 2) beatWait = 150;
+      isStart = true;  
+      startTime = millis();
+      
+      beatSong.play();
+      beatSong.mute();
+      beat = new BeatDetect();
+   }
 }
 
 void draw(){
@@ -105,9 +108,9 @@ void draw(){
     
     backgroundDraw();
     UIDraw();
+    update();
     
     if(millis() - startTime >= wait){
-      update();
       if(!isMusicOn){
         song.play();
         isMusicOn = true;
@@ -278,10 +281,7 @@ void UIDraw(){
 }
 
 void beatDetection(){
-  beatSong.play();
-  beatSong.mute();
   beat.detect(beatSong.mix);
-  //beats.detect(song.mix);
   
   if ( beat.isOnset() ){
     if(millis() - beatTime >= beatWait){
@@ -321,17 +321,9 @@ void keyPressed(){
   
   if(keyCode == ENTER || keyCode == RETURN){
     if(!isStart){
-      songSelect(music);
-      wait = wait/(speed-1);
-      isStart = true;  
-      startTime = millis();
+      gameStart();
     }
   }
-  
-  //if(keyCode == BACKSPACE){
-  //  setup();
-  //  isStart = false;
-  //}
   
   ArrayList<Note> lane;
   int index = 0;
