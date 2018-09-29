@@ -14,6 +14,7 @@ GameController gameController = new GameController();
 int[] laneCount = new int[] {0, 0, 0, 0};
 
 //library instance
+PImage background;
 PImage musicImg;
 Minim minim;
 AudioPlayer song;
@@ -29,6 +30,7 @@ PImage firestoneImg;
 
 //game manage
 boolean isStart = false; //false before start
+boolean isOver = false; //gameOver
 boolean mouseOver = false;
 boolean isMusicOn = false;
 
@@ -53,7 +55,8 @@ int beatWait = 300;
 
 void setup(){
   size(550,700);
-  background(0);
+  background = loadImage("background.jpg");
+  background(background);
   
   unityImg = loadImage("unity.jpg");
   go4itImg = loadImage("go4it.jpg");
@@ -100,6 +103,11 @@ void gameStart(){
    }
 }
 
+void gameOver(){
+  isStart = false;
+  isOver = true;
+}
+
 void draw(){
     
   if(isStart){
@@ -116,9 +124,19 @@ void draw(){
         isMusicOn = true;
       }
     }
+    
+    if(hp <= 0){
+      gameOver();
+    }
       
-  }else{
+  }else if(isOver){
     background(0);
+    fill(255);
+    textSize(50);
+    text("GAME OVER!", 130, height/2);
+  }
+  else{
+    background(background);
     String title = "TheFatRat - Unity";
     switch(music){
       case 0:
@@ -131,17 +149,20 @@ void draw(){
       break;
       case 2:
       musicImg = firestoneImg;
-      title = "Kygo - Firestone";
+      title = "TheFatRat - Prelude";
       break;
     }
     
     update();
     textSize(30);
-    fill(200);
+    fill(255);
     text(title, 130,150);
     image(musicImg, 150, 200, 200, 200);
     fill(255);
     rect(150,450,200,50,10);
+    triangle(100,300,120,320,120,280);
+    triangle(380,320,400,300,380,280);
+    
     fill(50);
     textSize(30);
     text("ENTER", 200, 485);
@@ -196,21 +217,21 @@ void backgroundDraw()
     //lane backgrounds
     //lane1
     fill(255);
-    rect(20,0,105,690);
+    rect(20,0,105,690,7);
     //lane2
     fill(255);
-    rect(125,0,95,690);
+    rect(125,0,95,690,7);
     //lane3
     fill(255);
-    rect(220,0,95,690);
+    rect(220,0,95,690,7);
     //lane4
     fill(255);
-    rect(315,0,105,690);
+    rect(315,0,105,690,7);
     
     //hit box
     strokeWeight(2);
     fill(255,255,0);
-    rect(10,550,420,30);  
+    rect(10,550,420,30,7);  
     
     //lane lines
     strokeWeight(0.5);
@@ -221,28 +242,28 @@ void backgroundDraw()
     //keyboard rect 'S'
     strokeWeight(1.5);
     fill(100);
-    rect(30,600,95,80);
+    rect(30,600,95,80,7);
     fill(255);
     textSize(50);
     text("S",65,660);
     
     //keyboard rect 'D'
     fill(100);
-    rect(125,600,95,80);
+    rect(125,600,95,80,7);
     fill(255);
     textSize(50);
     text("D",155,660);
     
     //keyboard rect 'J'
     fill(100);
-    rect(220,600,95,80);
+    rect(220,600,95,80,7);
     fill(255);
     textSize(50);
     text("J",260,660);
     
     //keyboard rect 'K'
     fill(100);
-    rect(315,600,95,80);
+    rect(315,600,95,80,7);
     fill(255);
     textSize(50);
     text("K",350,660);
@@ -255,7 +276,9 @@ void UIDraw(){
   
   //HP
   fill(100);
-  rect(440,40,100,20);
+  rect(440,40,100,20,5);
+  fill(165,255,0);
+  rect(440,40,hp,20,5);
   
   //score
   fill(0);
@@ -377,11 +400,15 @@ void chkHit(ArrayList<Note> lane, int index){
     case 0: //normal
       hitText = "";
       combo = 0;
-      hp -= 5;
+      hp -= 500;
       break;
     case 1: //close
       hitText = "  GOOD";
-      score += goodScore;
+      if(combo > 10){
+        score += goodScore * combo/10;
+      }else{
+        score += goodScore;
+      }
       combo++;
       lane.get(laneCount[index]).hit = true;
       laneCount[index]++;
@@ -389,7 +416,11 @@ void chkHit(ArrayList<Note> lane, int index){
       break;
     case 2: //exactly fit
       hitText = "PERFECT";
-      score += perfectScore;
+      if(combo > 10){
+        score += perfectScore * combo/10;
+      }else{
+        score += perfectScore;
+      }
       combo++;
       lane.get(laneCount[index]).hit = true;
       laneCount[index]++;
