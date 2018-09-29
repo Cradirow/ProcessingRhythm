@@ -46,6 +46,7 @@ int goodScore = 10;
 
 //hit effects
 String hitText = "";
+float hitTextSize = 50;
 
 //delay
 int startTime;
@@ -272,7 +273,9 @@ void backgroundDraw()
 void UIDraw(){
   //hit
   fill(0);
+  textSize(hitTextSize);
   text(hitText, 125, 250);
+  hitTextSize *= 0.995;
   
   //HP
   fill(100);
@@ -393,6 +396,7 @@ void chkHit(ArrayList<Note> lane, int index){
   try{
     switch(lane.get(laneCount[index]).hitLocation){
     case -1: //above
+      hitTextSize = 60;
       hitText = "   BAD";
       combo = 0;
       hp -= 5;
@@ -400,9 +404,10 @@ void chkHit(ArrayList<Note> lane, int index){
     case 0: //normal
       hitText = "";
       combo = 0;
-      hp -= 500;
+      hp -= 1;
       break;
     case 1: //close
+      hitTextSize = 60;
       hitText = "  GOOD";
       if(combo > 10){
         score += goodScore * combo/10;
@@ -415,6 +420,7 @@ void chkHit(ArrayList<Note> lane, int index){
       keyHitImpact(60);
       break;
     case 2: //exactly fit
+      hitTextSize = 60;
       hitText = "PERFECT";
       if(combo > 10){
         score += perfectScore * combo/10;
@@ -434,6 +440,7 @@ void chkHit(ArrayList<Note> lane, int index){
 
 public void noteOut(int _note){
   laneCount[_note]++;
+  hitTextSize = 60;
   hitText = "   BAD";
   hp -= 5;
   combo = 0;
